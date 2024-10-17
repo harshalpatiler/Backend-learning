@@ -1,7 +1,7 @@
 const express = require("express");
 const app = express();
 const connectDb = require("./config/database");
-const User = require("./model/user");
+const user = require("./model/user");
 
 app.use(express.json())
 app.post("/signup", async (req, res) => {
@@ -20,6 +20,53 @@ app.post("/signup", async (req, res) => {
     res.status(400).send("Error in saving the user :" + err.message);
   }
 });
+app.get('/user', async (req, res)=>{
+const userEmailId = req.body.emailId
+try {
+  const userInfo = await user.find({
+  emailId : userEmailId
+})
+if(userInfo.length === 0){
+  res.status(404).send("please enter correct email id")
+}else res.send(userInfo);
+} catch(err){
+  res.status(404).send("something went wrong")
+}
+
+})
+
+app.get('/feed', async (req, res)=>{
+ try {
+  const alluser = await user.find();
+ res.send(alluser);
+}catch(err){
+  res.status(404).send("Something went wrong !!!!");
+}
+} );
+
+app.delete('/user', async (req, res)=>{
+  const id = req.body.userId;
+  console.log(id)
+  try{
+     const userone = await user.findByIdAndDelete(id);
+     res.send("User with these id not found please try again with correct email id ")
+  }catch(err){
+    res.status(404).send("something went wrong!!")
+  }
+})
+
+app.patch('/update', async (req, res)=>{
+  const id = req.body.userId;
+  const data = req.body;
+  console.log(id)
+  console.log(data)
+ try{ 
+  const updatedUser = await user.findByIdAndUpdate(id, data);
+  res.send("The user has beed updated successfully!!!")
+}catch(err){
+  res.status(404).send("Error occured"+ err.message)
+}
+})
 
 connectDb()
   .then(() => {
